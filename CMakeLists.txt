@@ -165,6 +165,11 @@ list(FILTER ALL_FILES EXCLUDE REGEX "src/sys/sys_timer.c")
 list(FILTER ALL_FILES EXCLUDE REGEX "src/sys/sys_fault.c")
 list(FILTER ALL_FILES EXCLUDE REGEX "src/mods/object_ram.c")
 
+# The Xbox 360 takes sf64.o2r made on a PC, as the README has Switch users do, so Torch stays on the PC.
+if (XSDK)
+    list(FILTER ALL_FILES EXCLUDE REGEX "src/port/extractor/.*")
+endif()
+
 if (CMAKE_SYSTEM_NAME STREQUAL "iOS")
     set(IOS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libultraship/ios)
 
@@ -219,10 +224,13 @@ if (MSVC)
 endif()
 
 #=================== SSE2NEON ===================
+# Only ARM's mixer takes it (src/audio/mixer.c:21-25).
+if (NOT XSDK)
 set(SSE2NEON_DIR ${CMAKE_BINARY_DIR}/_deps/sse2neon)
 file(DOWNLOAD "https://raw.githubusercontent.com/DLTcollab/sse2neon/refs/heads/master/sse2neon.h" "${SSE2NEON_DIR}/sse2neon.h")
 
 include_directories(${SSE2NEON_DIR})
+endif()
 
 FetchContent_Declare(
     dr_libs
@@ -383,8 +391,13 @@ option(BUILD_STORMLIB "Build with StormLib support" OFF)
 option(BUILD_SM64 "Build with Super Mario 64 support" OFF)
 option(BUILD_MK64 "Build with Mario Kart 64 support" OFF)
 option(BUILD_FZERO "Build with F-Zero X support" OFF)
+if (XSDK)
+target_link_libraries(${PROJECT_NAME} PRIVATE "${ADDITIONAL_LIBRARY_DEPENDENCIES}")
+xsdk_add_xex(${PROJECT_NAME} TITLE_ID 0x53544152 NAME "Starship")
+else()
 add_subdirectory(tools/Torch)
 target_link_libraries(${PROJECT_NAME} PRIVATE torch "${ADDITIONAL_LIBRARY_DEPENDENCIES}")
+endif()
 
 if(CMAKE_SYSTEM_NAME MATCHES "NintendoSwitch")
 
@@ -588,13 +601,14 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
           >
           $<$<COMPILE_LANGUAGE:CXX>:-fpermissive>
           $<$<COMPILE_LANGUAGE:CXX>:-Wno-deprecated-enum-enum-conversion>
-          -pthread
+          # xsdk's GCC takes no -pthread, as pthreads are libxsdk's, and titles link no shared objects.
+          $<$<NOT:$<BOOL:${XSDK}>>:-pthread>
     ${CPU_OPTION}
       )
 
       target_link_options(${PROJECT_NAME} PRIVATE
-          -pthread
-          -Wl,-export-dynamic
+          $<$<NOT:$<BOOL:${XSDK}>>:-pthread>
+          $<$<NOT:$<BOOL:${XSDK}>>:-Wl,-export-dynamic>
       )
   endif()
 endif()
@@ -606,7 +620,7 @@ add_custom_command(
 	COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/assets/" "$<TARGET_FILE_DIR:Starship>/assets/"
 )
 
-if(NOT CMAKE_SYSTEM_NAME STREQUAL "NintendoSwitch")
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "NintendoSwitch" AND NOT XSDK)
 include(ExternalProject)
 ExternalProject_Add(TorchExternal
 	PREFIX TorchExternal
