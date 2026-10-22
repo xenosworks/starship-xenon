@@ -399,7 +399,8 @@ void AudioLoad_SyncInitSeqPlayerInternal(s32 playerIdx, s32 seqId, s32 arg2) {
 
     AudioSeq_SequencePlayerDisable(&gSeqPlayers[playerIdx]);
 
-    index = BSWAP16(*((u16*) gSeqFontTable + seqId));
+    // The table is the ROM's bytes, so its offsets are big-endian (assets/yaml/us/rev1/ast_audio.yaml:30-31).
+    index = BE16SWAP(*((u16*) gSeqFontTable + seqId));
     numFonts = gSeqFontTable[index++];
     fontId = 0xFF;
 

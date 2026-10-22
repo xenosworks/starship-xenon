@@ -33,7 +33,8 @@ std::shared_ptr<Ship::IResource> ResourceFactoryBinarySampleV1::ReadResource(std
         sample->mSample.medium = 2;
         for(size_t i = 0; i < sample->mSample.size / 2; i++){
             auto sampleData = (int16_t*) sample->mSample.sampleAddr;
-            sampleData[i] = BSWAP16(sampleData[i]);
+            // Torch copies the ROM's samples, big-endian (torch:src/factories/naudio/v1/SampleFactory.cpp:41).
+            sampleData[i] = BE16SWAP(sampleData[i]);
         }
     } else {
         sample->mSample.medium = 0;
