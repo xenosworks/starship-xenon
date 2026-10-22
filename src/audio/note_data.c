@@ -199,11 +199,12 @@ u8 gDefaultShortNoteGateTimeTable[] = {
     229, 203, 177, 151, 139, 126, 113, 100, 87, 74, 61, 48, 36, 23, 10, 0,
 };
 
+// Envelopes are kept byte-swapped on every host, as audio_effects.c:203-226 swaps them back unconditionally.
 EnvelopePoint gDefaultEnvelope[] = {
-    { BE16SWAP_CONST(4), BE16SWAP_CONST(32000) },
-    { BE16SWAP_CONST(1000), BE16SWAP_CONST(32000) },
-    { BE16SWAP_CONST(ADSR_HANG), 0 },
-    { BE16SWAP_CONST(ADSR_DISABLE), 0 },
+    { BOMSWAP16_CONST(4), BOMSWAP16_CONST(32000) },
+    { BOMSWAP16_CONST(1000), BOMSWAP16_CONST(32000) },
+    { BOMSWAP16_CONST(ADSR_HANG), 0 },
+    { BOMSWAP16_CONST(ADSR_DISABLE), 0 },
 };
 
 NoteSubEu gZeroNoteSub = { 0 };
