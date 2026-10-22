@@ -476,7 +476,10 @@ void DrawSettingsMenu(){
         static std::unordered_map<Ship::WindowBackend, const char*> windowBackendNames = {
                 { Ship::WindowBackend::FAST3D_DXGI_DX11, "DirectX" },
                 { Ship::WindowBackend::FAST3D_SDL_OPENGL, "OpenGL"},
-                { Ship::WindowBackend::FAST3D_SDL_METAL, "Metal" }
+                { Ship::WindowBackend::FAST3D_SDL_METAL, "Metal" },
+#ifdef __XSDK__
+                { Ship::WindowBackend::FAST3D_XSDK, "xsdk" },
+#endif
         };
 
         ImGui::Text("Renderer API (Needs reload)");
