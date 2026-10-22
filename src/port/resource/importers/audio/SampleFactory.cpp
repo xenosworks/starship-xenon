@@ -137,7 +137,8 @@ static void OggDecoderWorker(std::shared_ptr<Sample> sample, std::shared_ptr<Shi
     sample->mSample.sampleAddr = new uint8_t[toRead];
     sample->mSample.tuning = (float)(sampleRate * numChannels) / 32000.0f;
     do {
-        read = ov_read(&vf, dataBuff, 4096, 0, 2, 1, &bitStream);
+        // The mixer takes samples in the host's order.
+        read = ov_read(&vf, dataBuff, 4096, Ship::Endianness::Native == Ship::Endianness::Big, 2, 1, &bitStream);
         memcpy(sample->mSample.sampleAddr + pos, dataBuff, read);
         pos += read;
     } while (read != 0);
