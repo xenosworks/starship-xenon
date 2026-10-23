@@ -4,9 +4,6 @@
 
 #ifndef __XSDK__
 #include "extractor/GameExtractor.h"
-#else
-#include "xsdk/log.h"
-#include "xsdk/thread.h"
 #endif
 #include "libultraship/src/Context.h"
 #include "libultraship/src/controller/controldevice/controller/mapping/ControllerDefaultMappings.h"
@@ -376,14 +373,6 @@ extern "C" unsigned short samples_high = SAMPLES_HIGH;
 extern "C" unsigned short samples_low = SAMPLES_LOW;
 
 void GameEngine::HandleAudioThread() {
-#ifdef __XSDK__
-    // Hardware thread 2, off the main thread's core (0 and 1); libultraship's threads take 3 to 5.
-    if (const NTSTATUS status = xsdk_thread_move(2); !NT_SUCCESS(status)) {
-        xsdk_log_write("Starship: xsdk_thread_move(2) for the audio thread failed: 0x%08X", (unsigned) status);
-    } else {
-        xsdk_log_write("Starship: the audio thread on hardware thread %u", (unsigned) xsdk_thread_hardware_thread());
-    }
-#endif
 #ifdef PIPE_DEBUG
     std::ofstream outfile("audio.bin", std::ios::binary | std::ios::app);
 #endif
