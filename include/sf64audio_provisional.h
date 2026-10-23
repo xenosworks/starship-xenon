@@ -779,12 +779,22 @@ typedef struct {
 typedef struct {
     /* 0x0 */ union {
         u32 opArgs;
+#if (defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)) || defined(__BIG_ENDIAN__)
+        // opArgs packs op into its top byte, which a big-endian host keeps first, as the N64 does.
+        struct {
+            u8 op;
+            u8 arg0;
+            u8 arg1;
+            u8 arg2;
+        };
+#else
         struct {
             u8 arg2;
             u8 arg1;
             u8 arg0;
             u8 op;
         };
+#endif
     };
     union {
         uintptr_t asPtr;
