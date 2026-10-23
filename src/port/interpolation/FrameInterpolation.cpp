@@ -42,6 +42,11 @@ given a specific interpolation factor (0=old frame, 0.5=average of frames,
 
 static bool invert_matrix(const float m[16], float invOut[16]);
 
+#ifdef __XSDK__
+// sInterpolationMatrixStack's length (sys_matrix.c:28).
+static constexpr size_t INTERPOLATION_MATRICES = 0x1000;
+#endif
+
 using namespace std;
 
 namespace {
@@ -307,6 +312,23 @@ struct InterpolateCtx {
                         case Op::Marker:
                             break;
 
+#ifdef __XSDK__
+                        // A replay can pop more than it pushes: it applies an op only where the last frame has one
+                        // of its kind at the same index, and recording stops and starts within a frame. Matrix_Pop
+                        // has no floor, and below the stack lie gVIsPerFrame and the frame's display list pointers,
+                        // so the stack stops at its ends.
+                        case Op::MatrixPush:
+                            if (gInterpolationMatrix < &sInterpolationMatrixStack[INTERPOLATION_MATRICES - 1]) {
+                                Matrix_Push(&gInterpolationMatrix);
+                            }
+                            break;
+
+                        case Op::MatrixPop:
+                            if (gInterpolationMatrix > &sInterpolationMatrixStack[0]) {
+                                Matrix_Pop(&gInterpolationMatrix);
+                            }
+                            break;
+#else
                         case Op::MatrixPush:
                             Matrix_Push(&gInterpolationMatrix);
                             break;
@@ -314,6 +336,7 @@ struct InterpolateCtx {
                         case Op::MatrixPop:
                             Matrix_Pop(&gInterpolationMatrix);
                             break;
+#endif
 
                      // Unused on SF64
                      // case Op::MatrixPut:
@@ -405,6 +428,10 @@ struct InterpolateCtx {
 } // anonymous namespace
 
 unordered_map<Mtx*, MtxF> FrameInterpolation_Interpolate(float step) {
+#ifdef __XSDK__
+    // Each replay from the stack's base, as the frame drew from it (sys_main.c, Graphics_InitializeTask).
+    gInterpolationMatrix = &sInterpolationMatrixStack[0];
+#endif
     InterpolateCtx ctx;
     ctx.step = step;
     ctx.w = 1.0f - step;
