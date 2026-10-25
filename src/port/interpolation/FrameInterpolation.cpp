@@ -170,6 +170,14 @@ struct Recording {
 
 bool is_recording;
 vector<Path*> current_path;
+#ifdef __XSDK__
+// Whether each child opened and not yet closed was recorded. Recording stops and starts within a frame, and
+// FrameInterpolation_ShouldInterpolateFrame(true) turns it on whatever it was: on the frame of a death's camera cut,
+// recording off since the camera (fox_display.c), Object_SetMatrix turned it on while a scenery object was open
+// (fox_edisplay.c), so that object's close, checking only whether it records now, popped a path its open never pushed.
+// At the root that emptied current_path, and the next open read through it and crashed.
+vector<bool> open_recorded;
+#endif
 uint32_t camera_epoch;
 uint32_t previous_camera_epoch;
 Recording current_recording;
@@ -451,6 +459,9 @@ void FrameInterpolation_StartRecord(void) {
     current_recording = {};
     current_path.clear();
     current_path.push_back(&current_recording.root_path);
+#ifdef __XSDK__
+    open_recorded.clear();
+#endif
     if (!camera_interpolation) {
         // default to interpolating
         camera_interpolation = true;
@@ -468,6 +479,9 @@ void FrameInterpolation_StopRecord(void) {
 }
 
 void FrameInterpolation_RecordOpenChild(const void* a, int b) {
+#ifdef __XSDK__
+    open_recorded.push_back(is_recording);
+#endif
     if (!is_recording)
         return;
     label key = { a, b };
@@ -477,8 +491,26 @@ void FrameInterpolation_RecordOpenChild(const void* a, int b) {
 }
 
 void FrameInterpolation_RecordCloseChild(void) {
+#ifdef __XSDK__
+    // A close pops what its own open pushed, whether or not recording is on now; one with no open left in this
+    // recording pops nothing.
+    if (open_recorded.empty()) {
+        return;
+    }
+    const bool recorded = open_recorded.back();
+    open_recorded.pop_back();
+    if (!recorded) {
+        static bool logged;
+        if (is_recording && !logged) {
+            printf("interpolation: a close whose open wasn't recorded pops nothing (logged once)\n");
+            logged = true;
+        }
+        return;
+    }
+#else
     if (!is_recording)
         return;
+#endif
     // append(Op::CloseChild);
     if (has_inv_actor_mtx && current_path.size() == inv_actor_mtx_path_index) {
         has_inv_actor_mtx = false;
