@@ -450,7 +450,7 @@ void DrawSettingsMenu(){
             Ship::Context::GetInstance()->GetWindow()->GetGui()->SaveConsoleVariablesNextFrame();
         #else
             bool matchingRefreshRate = CVarGetInteger("gMatchRefreshRate", 0);
-            UIWidgets::CVarSliderInt((currentFps == 30) ? "FPS: Original (30)" : "FPS: %d", "gInterpolationFPS", minFps, maxFps, 60, {
+            UIWidgets::CVarSliderInt((currentFps == 30) ? "FPS: Original (30)" : "FPS: %d", "gInterpolationFPS", minFps, maxFps, INTERPOLATION_FPS_DEFAULT, {
                 .disabled = matchingRefreshRate
             });
         #endif

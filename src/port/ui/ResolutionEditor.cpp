@@ -61,7 +61,7 @@ namespace AdvancedResolutionSettings {
                 update[i] = false;
             static short updateCountdown = 0;
             auto interpreter = GameEngine_GetInterpreter();
-            short countdownStartingValue = CVarGetInteger("gInterpolationFPS", 60) / 2; // half of a second, in frames.
+            short countdownStartingValue = CVarGetInteger("gInterpolationFPS", INTERPOLATION_FPS_DEFAULT) / 2; // half of a second, in frames.
 
             // Initialise integer scale bounds.
             short max_integerScaleFactor = default_maxIntegerScaleFactor; // default value, which may or may not get
@@ -410,7 +410,7 @@ namespace AdvancedResolutionSettings {
     bool AdvancedResolutionSettingsWindow::IsDroppingFrames() {
         // a rather imprecise way of checking for frame drops.
         // but it's mostly there to inform the player of large drops.
-        const short targetFPS = CVarGetInteger("gInterpolationFPS", 60);
+        const short targetFPS = CVarGetInteger("gInterpolationFPS", INTERPOLATION_FPS_DEFAULT);
         const float threshold = targetFPS / 20.0f + 4.1f;
         return ImGui::GetIO().Framerate < targetFPS - threshold;
     }

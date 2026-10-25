@@ -3,6 +3,15 @@
 #define LOAD_ASSET(path) (path == NULL ? NULL : (GameEngine_OTRSigCheck((const char*) path) ? ResourceGetDataByName((const char*) path) : path))
 #define LOAD_ASSET_RAW(path) ResourceGetDataByName((const char*) path)
 
+// The frame rate interpolation draws at unless the player picks another. On the Xbox 360 it's the game's own 30: the
+// console can't draw every scene's display list twice an update, and when updates fall behind, so does the audio, which
+// comes a frame an update, and it crackles.
+#ifdef __XSDK__
+#define INTERPOLATION_FPS_DEFAULT 30
+#else
+#define INTERPOLATION_FPS_DEFAULT 60
+#endif
+
 typedef enum {
     SF64_VER_US = 0x94F1D5A7,
     SF64_VER_EU = 0x6EE9ADE7,
