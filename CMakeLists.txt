@@ -393,6 +393,9 @@ option(BUILD_MK64 "Build with Mario Kart 64 support" OFF)
 option(BUILD_FZERO "Build with F-Zero X support" OFF)
 if (XSDK)
 target_link_libraries(${PROJECT_NAME} PRIVATE "${ADDITIONAL_LIBRARY_DEPENDENCIES}")
+# gfx_xsdk's shader pack: the programs Starship compiled on the console, so a first run needn't compile them
+# (libultraship:tools/xsdk/fast3d_pack.py).
+target_sources(${PROJECT_NAME} PRIVATE xsdk/fast3d_pack.c)
 xsdk_add_xex(${PROJECT_NAME} TITLE_ID 0x53544152 NAME "Starship")
 else()
 add_subdirectory(tools/Torch)
