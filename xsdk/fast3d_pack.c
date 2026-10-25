@@ -1,5 +1,5 @@
 // gfx_xsdk's shader pack, written by libultraship-xenon's tools/xsdk/fast3d_pack.py from the programs
-// kept in shaders/fast3d/23301E9B7CB9C8D7: 18 of them.
+// kept in shaders/fast3d/F40C88B5615751D4: 18 of them.
 #include "graphic/Fast3D/backends/gfx_xsdk_pack.h"
 
 static const uint8_t program_0[2476] = {
@@ -2774,4 +2774,4 @@ static const XsdkShaderPackProgram programs[] = {
     { "clear", program_17, sizeof(program_17) },
 };
 
-const XsdkShaderPack xsdk_fast3d_pack = { "23301E9B7CB9C8D7", programs, 18 };
+const XsdkShaderPack xsdk_fast3d_pack = { "F40C88B5615751D4", programs, 18 };
