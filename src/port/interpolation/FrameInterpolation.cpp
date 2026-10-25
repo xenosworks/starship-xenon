@@ -7,6 +7,11 @@
 #include "port/Engine.h"
 
 #include "FrameInterpolation.h"
+#ifdef __XSDK__
+extern "C" {
+#include <sf64thread.h>
+}
+#endif
 
 /*
 Frame interpolation.
@@ -177,6 +182,10 @@ vector<Path*> current_path;
 // (fox_edisplay.c), so that object's close, checking only whether it records now, popped a path its open never pushed.
 // At the root that emptied current_path, and the next open read through it and crashed.
 vector<bool> open_recorded;
+// Whether this frame's recording is replayed at all: only when interpolation draws frames between the game's
+// (Engine.cpp, ProcessGfxCommands). At the game's own rate, the default on xsdk, it isn't made, nor switched on within
+// the frame, as on the map its hundreds of children took the game's own work past a frame.
+bool frame_replayed;
 #endif
 uint32_t camera_epoch;
 uint32_t previous_camera_epoch;
@@ -451,7 +460,11 @@ bool camera_interpolation = true;
 
 void FrameInterpolation_ShouldInterpolateFrame(bool shouldInterpolate) {
     // camera_interpolation = shouldInterpolate;
+#ifdef __XSDK__
+    is_recording = shouldInterpolate && frame_replayed;
+#else
     is_recording = shouldInterpolate;
+#endif
 }
 
 void FrameInterpolation_StartRecord(void) {
@@ -471,6 +484,12 @@ void FrameInterpolation_StartRecord(void) {
     if (GameEngine::GetInterpolationFPS() != 20) {
         is_recording = true;
     }
+#ifdef __XSDK__
+    // ProcessGfxCommands' rule for drawing frames between the game's.
+    const int fps = (int)GameEngine::GetInterpolationFPS();
+    frame_replayed = fps != 20 && fps > 60 / (gVIsPerFrame > 0 ? gVIsPerFrame : 1);
+    is_recording = is_recording && frame_replayed;
+#endif
 }
 
 void FrameInterpolation_StopRecord(void) {
