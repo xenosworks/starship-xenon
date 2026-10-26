@@ -4,6 +4,8 @@
 
 #ifndef __XSDK__
 #include "extractor/GameExtractor.h"
+#else
+#include "xsdk/FirstRun.h"
 #endif
 #include "libultraship/src/Context.h"
 #include "libultraship/src/controller/controldevice/controller/mapping/ControllerDefaultMappings.h"
@@ -85,9 +87,8 @@ GameEngine::GameEngine() {
         archiveFiles.push_back(main_path);
     } else {
 #ifdef __XSDK__
-        // Torch isn't built for the console: sf64.o2r is made on a PC and copied beside the .xex (README.md:48-50).
-        ShowMessage("Starship", "sf64.o2r isn't beside the .xex. Make it on a PC from a US 1.0 or 1.1 ROM.");
-        exit(1);
+        // Made from the player's ROM beside the .xex; Starship then starts again (xsdk/FirstRun.cpp).
+        XsdkMakeAssets();
 #else
         if (ShowYesNoBox("Starship - Asset Extraction", "Please provide a Starfox 64 ROM.\n\nSupported Versions:\nUS 1.0\nUS 1.1\n\nAssets will be extracted into an O2R file.") == IDYES) {
             if(!GenAssetFile()){
