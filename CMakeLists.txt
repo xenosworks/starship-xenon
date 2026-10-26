@@ -396,7 +396,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE "${ADDITIONAL_LIBRARY_DEPENDENCIES
 # gfx_xsdk's shader pack: the programs Starship compiled on the console, so a first run needn't compile them
 # (libultraship:tools/xsdk/fast3d_pack.py).
 target_sources(${PROJECT_NAME} PRIVATE xsdk/fast3d_pack.c)
-xsdk_add_xex(${PROJECT_NAME} TITLE_ID 0x53544152 NAME "Starship" VERSION 0.1.0.0)
+xsdk_add_xex(${PROJECT_NAME} TITLE_ID 0x53544152 NAME "Starship" VERSION 0.2.0.0)
 # Torch, which makes sf64.o2r from the player's ROM on the console (xsdk milestone 64), and torch_check, its check there.
 add_subdirectory(tools/Torch)
 target_sources(${PROJECT_NAME} PRIVATE src/port/xsdk/FirstRun.cpp)
